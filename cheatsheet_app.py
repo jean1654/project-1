@@ -492,35 +492,32 @@ from sklearn.naive_bayes import MultinomialNB
     }
 ]
 
-# Sidebar for navigation and filtering
-st.sidebar.header("🔎 Navigate Topics")
-all_topics = [item["Topic"] for item in cheat_data]
-selected_topics = st.sidebar.multiselect(
-    "Select Topics:",
-    all_topics,
-    default=all_topics
-)
-search_query = st.sidebar.text_input(
-    "Search Topics"
-)
+# Sidebar: simple search bar and topic list
+st.sidebar.header("🔎 Search Topics")
+search_query = st.sidebar.text_input("Enter keyword to filter topics:")
+
+# Display all or filtered topics in sidebar
+st.sidebar.markdown("### Topics")
+for item in cheat_data:
+    if not search_query or search_query.lower() in item['Topic'].lower():
+        st.sidebar.write(f"- {item['Topic']}")
 
 # Optional summary table toggle
 if st.sidebar.checkbox("Show Summary Table"):
     df_summary = pd.DataFrame([
-        {"Topic": t["Topic"], "Summary": t["Summary"]}
+        {"Topic": t['Topic'], "Summary": t['Summary']}
         for t in cheat_data
-        if t["Topic"] in selected_topics and search_query.lower() in t["Topic"].lower()
+        if not search_query or search_query.lower() in t['Topic'].lower()
     ])
     st.sidebar.dataframe(df_summary, use_container_width=True)
 
 # Expand All control
 expand_all = st.sidebar.button("Expand All")
 
-# Filter content based on selection and search
+# Filter main content based on search
 filtered = [
     t for t in cheat_data
-    if t["Topic"] in selected_topics
-    and (search_query.lower() in t["Topic"].lower())
+    if not search_query or search_query.lower() in t['Topic'].lower()
 ]
 
 # Main Content
@@ -532,15 +529,17 @@ for item in filtered:
         st.markdown(f"**Explanation**: {item['Explanation']}")
         st.markdown("---")
 
-# Download Summary CSV button
-df_download = pd.DataFrame([
-    {"Topic": t["Topic"], "Summary": t["Summary"]}
-    for t in filtered
-])
-csv_data = df_download.to_csv(index=False).encode('utf-8')
-st.download_button(
-    "⬇️ Download Summary CSV",
-    data=csv_data,
-    file_name="ie2108_python_cheatsheet.csv",
-    mime="text/csv"
-)
+# Download Summary CSV
+if filtered:
+    df_download = pd.DataFrame([
+        {"Topic": t['Topic'], "Summary": t['Summary']} for t in filtered
+    ])
+    csv_data = df_download.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        "⬇️ Download Summary CSV",
+        data=csv_data,
+        file_name="ie2108_python_cheatsheet.csv",
+        mime="text/csv"
+    )
+else:
+    st.info("No topics match your search.")
