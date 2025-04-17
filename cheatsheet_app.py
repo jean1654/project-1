@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Page Title with styling
+# Styled Page Title
 st.markdown(
     "<h1 style='text-align:center; color:#4B8BBE;'>📘 IE2108 Python Cheatsheet</h1>",
     unsafe_allow_html=True
@@ -367,7 +367,7 @@ A = [
         "Topic": "Breadth-First Search (BFS)",
         "Summary": "Level-order graph traversal",
         "Code": '''
-# BFS on non-tree (DSA4.pdf)
+# BFS (DSA4.pdf)
 
 def bfs(graph, start):
     visited = [False] * (len(graph) + 1)
@@ -495,15 +495,11 @@ from sklearn.naive_bayes import MultinomialNB
 # Sidebar for navigation and filtering
 st.sidebar.header("🔎 Navigate Topics")
 all_topics = [item["Topic"] for item in cheat_data]
- and filtering
-st.sidebar.header("🔎 Navigate Topics")
-all_topics = [item["Topic"] for item in cheat_data]
 selected_topics = st.sidebar.multiselect(
     "Select Topics:",
     all_topics,
     default=all_topics
 )
-
 search_query = st.sidebar.text_input(
     "Search Topics"
 )
@@ -517,22 +513,22 @@ if st.sidebar.checkbox("Show Summary Table"):
     ])
     st.sidebar.dataframe(df_summary, use_container_width=True)
 
-# Expand All / Collapse All control
+# Expand All control
 expand_all = st.sidebar.button("Expand All")
 
-# Filtered list
+# Filter content based on selection and search
 filtered = [
     t for t in cheat_data
     if t["Topic"] in selected_topics
-    and search_query.lower() in t["Topic"].lower()
+    and (search_query.lower() in t["Topic"].lower())
 ]
 
 # Main Content
 for item in filtered:
     with st.expander(f"🔹 {item['Topic']}", expanded=expand_all):
         st.markdown(f"**Summary**: {item['Summary']}")
-        if item.get("Code"):
-            st.code(item["Code"], language='python')
+        if code := item.get("Code"):
+            st.code(code, language='python')
         st.markdown(f"**Explanation**: {item['Explanation']}")
         st.markdown("---")
 
