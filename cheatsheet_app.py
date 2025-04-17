@@ -3,15 +3,22 @@ import pandas as pd
 
 # --------------------------------------------------
 # IE2108: Data Structures & Algorithms in Python Cheatsheet
-# All sections with example code matching lecture slides (DSA1-DSA4)
+# Enhanced UI features for streamlined navigation and display
 # --------------------------------------------------
 
 st.set_page_config(
-    page_title="IE2108 Python Full Cheatsheet",
-    layout="wide"
+    page_title="IE2108 Python Cheatsheet",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
-st.title("📘 IE2108 Full Python Coding Cheatsheet")
 
+# Page Title with styling
+st.markdown(
+    "<h1 style='text-align:center; color:#4B8BBE;'>📘 IE2108 Python Cheatsheet</h1>",
+    unsafe_allow_html=True
+)
+
+# Data: each section from lecture slides
 cheat_data = [
     {
         "Topic": "Recursion: Factorial",
@@ -485,15 +492,59 @@ from sklearn.naive_bayes import MultinomialNB
     }
 ]
 
-# Display
-for item in cheat_data:
-    with st.expander(f"🔹 {item['Topic']}"):
-        st.write(f"**Summary**: {item['Summary']}")
-        st.code(item['Code'], language='python')
+# Sidebar for navigation and filtering
+st.sidebar.header("🔎 Navigate Topics")
+all_topics = [item["Topic"] for item in cheat_data]
+ and filtering
+st.sidebar.header("🔎 Navigate Topics")
+all_topics = [item["Topic"] for item in cheat_data]
+selected_topics = st.sidebar.multiselect(
+    "Select Topics:",
+    all_topics,
+    default=all_topics
+)
+
+search_query = st.sidebar.text_input(
+    "Search Topics"
+)
+
+# Optional summary table toggle
+if st.sidebar.checkbox("Show Summary Table"):
+    df_summary = pd.DataFrame([
+        {"Topic": t["Topic"], "Summary": t["Summary"]}
+        for t in cheat_data
+        if t["Topic"] in selected_topics and search_query.lower() in t["Topic"].lower()
+    ])
+    st.sidebar.dataframe(df_summary, use_container_width=True)
+
+# Expand All / Collapse All control
+expand_all = st.sidebar.button("Expand All")
+
+# Filtered list
+filtered = [
+    t for t in cheat_data
+    if t["Topic"] in selected_topics
+    and search_query.lower() in t["Topic"].lower()
+]
+
+# Main Content
+for item in filtered:
+    with st.expander(f"🔹 {item['Topic']}", expanded=expand_all):
+        st.markdown(f"**Summary**: {item['Summary']}")
+        if item.get("Code"):
+            st.code(item["Code"], language='python')
         st.markdown(f"**Explanation**: {item['Explanation']}")
+        st.markdown("---")
 
-# Download
-
-df = pd.DataFrame([{'Topic':t['Topic'],'Summary':t['Summary']} for t in cheat_data])
-csv = df.to_csv(index=False).encode('utf-8')
-st.download_button("⬇️ Download CSV", data=csv, file_name="ie2108_cheatsheet.csv", mime="text/csv")
+# Download Summary CSV button
+df_download = pd.DataFrame([
+    {"Topic": t["Topic"], "Summary": t["Summary"]}
+    for t in filtered
+])
+csv_data = df_download.to_csv(index=False).encode('utf-8')
+st.download_button(
+    "⬇️ Download Summary CSV",
+    data=csv_data,
+    file_name="ie2108_python_cheatsheet.csv",
+    mime="text/csv"
+)
